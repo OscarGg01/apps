@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Casa Joyas — Panel Admin</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+  <div class="layout">
+
+    <aside class="sidebar" id="sidebar" style="display:none">
+      <div class="sidebar-brand">
+        <div class="logo-circle">CJ</div>
+        <span>Casa Joyas</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-section="productos">🛍 Productos</button>
+        <button class="nav-item" data-section="ordenes">📦 Órdenes</button>
+        <button class="nav-item" data-section="usuarios">👤 Usuarios</button>
+      </nav>
+    </aside>
+
+    <main class="main-area">
+
+      <section id="loginPanel" class="login-box">
+        <div class="login-header">
+          <div class="logo-circle big">CJ</div>
+          <h2>Casa Joyas<br><small>Panel Administrativo</small></h2>
+        </div>
+
+        <div class="form">
+          <label>Email</label>
+          <input id="email" type="text" placeholder="ejemplo@correo.com">
+
+          <label>Contraseña</label>
+          <input id="password" type="password" placeholder="••••••••">
+
+          <button id="loginBtn" class="btn primary">Iniciar sesión</button>
+          <button id="logoutBtn" class="btn ghost" style="display:none">Cerrar sesión</button>
+
+          <div id="authMsg" class="auth-msg"></div>
+        </div>
+      </section>
+
+      <section id="mainPanel" style="display:none">
+        <header class="panel-header">
+          <div>
+            <h1>Panel Admin — Casa Joyas</h1>
+            <p class="subtitle">Gestiona productos, órdenes y usuarios</p>
+          </div>
+
+          <div class="admin-box">
+            <span id="adminEmail">admin@mail.com</span>
+            <button id="logoutTopBtn" class="btn ghost small">Cerrar sesión</button>
+          </div>
+        </header>
+
+        <section id="productosPanel">
+          <div class="panel-tools">
+            <input id="searchInput" class="search-input" placeholder="Buscar joya por nombre">
+            <button id="newProdBtn" class="btn primary small">+ Nuevo producto</button>
+          </div>
+          <div id="joyasList" class="products-grid"></div>
+        </section>
+
+        <section id="ordenesPanel" class="hidden">
+          <div class="panel-tools">
+            <input type="text" id="orderSearchInput" class="search-input" placeholder="Buscar orden por nombre del cliente...">
+          </div>
+          <div id="ordenesList" class="orders-grid"></div>
+        </section>
+
+        <section id="usuariosPanel" class="hidden">
+            <div class="panel-header">
+                <h1>Gestión de Usuarios</h1>
+                <p class="subtitle">Administra los clientes y los usuarios con permisos de administrador.</p>
+            </div>
+            
+            <div class="panel-tools" style="margin-top: 25px;">
+                <h2>Usuarios Administradores</h2>
+                <button id="newAdminBtn" class="btn primary small">+ Nuevo Usuario</button>
+            </div>
+            <div id="adminsList" class="users-grid">
+                </div>
+
+            <div class="panel-tools" style="margin-top: 30px;">
+                <h2>Clientes Registrados</h2>
+                </div>
+            <div id="usersList" class="users-grid">
+                </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" style="display:none">
+    <div class="modal">
+      <h3>Nuevo producto</h3>
+      <label>Nombre</label>
+      <input id="nombre" type="text">
+      <label>Precio</label>
+      <input id="precio" type="number">
+      <label>Material</label>
+      <input id="material" type="text">
+      <label>Tipo</label>
+      <input id="tipo" type="text">
+      <label>Stock</label>
+      <input id="stock" type="number">
+      <label>Imagen (URL)</label>
+      <input id="imageUrl" type="text">
+      <label>Descripción</label>
+      <textarea id="descripcion" rows="3"></textarea>
+      <div class="modal-actions">
+        <button id="cancelNewBtn" class="btn ghost">Cancelar</button>
+        <button id="addBtn" class="btn primary">Guardar producto</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modalEditBackdrop" style="display:none">
+    <div class="modal">
+      <h3>Editar producto</h3>
+      <input type="hidden" id="editId">
+      <label>Nombre</label>
+      <input id="editNombre" type="text">
+      <label>Precio</label>
+      <input id="editPrecio" type="number">
+      <label>Material</label>
+      <input id="editMaterial" type="text">
+      <label>Tipo</label>
+      <input id="editTipo" type="text">
+      <label>Stock</label>
+      <input id="editStock" type="number">
+      <label>Imagen (URL)</label>
+      <input id="editImageUrl" type="text">
+      <label>Descripción</label>
+      <textarea id="editDescripcion" rows="3"></textarea>
+      <div class="modal-actions">
+        <button id="cancelEditBtn" class="btn ghost">Cancelar</button>
+        <button id="saveEditBtn" class="btn primary">Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modalDetailBackdrop" style="display:none">
+    <div class="modal detail-modal">
+      <div class="detail-header">
+        <h2>Detalles de la órden</h2>
+        <button id="detailCloseBtn" class="close-btn">&times;</button>
+      </div>
+      
+      <div class="detail-grid">
+        <div class="detail-box client-box">
+          <h3>Información del Cliente</h3>
+          <p><strong>Nombre:</strong> <span id="detailClientName">Cargando...</span></p>
+          <p><strong>Teléfono:</strong> <span id="detailClientPhone">Cargando...</span></p>
+        </div>
+
+        <div class="detail-box order-info-box">
+          <h3>Información del Pedido</h3>
+          <p><strong>Fecha:</strong> <span id="detailOrderDate">Cargando...</span></p>
+          <p><strong>Monto Total:</strong> <span id="detailOrderTotal" class="total-amount">S/. 0.00</span></p>
+        </div>
+      </div>
+
+      <div class="detail-section products-section">
+        <h3>Productos</h3>
+        <div id="detailItemsList" class="items-list"></div>
+      </div>
+
+      <div class="modal-actions detail-actions">
+        <label for="detailStatusSelect">Cambiar Estado:</label>
+        <select id="detailStatusSelect">
+          <option value="Pendiente">Pendiente</option>
+          <option value="Confirmado">Confirmado</option>
+          <option value="Enviado">Enviado</option>
+          <option value="Entregado">Entregado</option>
+          <option value="Cancelado">Cancelado</option>
+        </select>
+        <button id="detailSaveBtn" class="btn primary">Guardar Estado</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modalAdminBackdrop" style="display:none">
+    <div class="modal">
+        <h3>Agregar Nuevo Administrador</h3>
+        <p class="subtitle">Para que el nuevo cliente aparezca en la lista actualice la página y vuelva a iniciar sesión.</p>
+        
+        <label>Nombre</label>
+        <input id="adminNombre" type="text" placeholder="Nombre completo">
+        <label>Email</label>
+        <input id="adminEmailInput" type="email" placeholder="correo@admin.com">
+        <label>Contraseña</label>
+        <input id="adminPassword" type="password" placeholder="Mínimo 6 caracteres">
+        <label>Teléfono</label>
+        <input id="adminNumero" type="text" placeholder="Opcional">
+        
+        <div class="modal-actions">
+            <button id="cancelAdminBtn" class="btn ghost">Cancelar</button>
+            <button id="addAdminSaveBtn" class="btn primary">Crear Usuario</button>
+        </div>
+    </div>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+
+  <script>
+    // Referencias a los contenedores principales
+    const loginPanel = document.getElementById("loginPanel");
+    const mainPanel = document.getElementById("mainPanel");
+    const sidebar = document.getElementById("sidebar");
+    
+    // Referencias a los modales
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const modalEditBackdrop = document.getElementById("modalEditBackdrop");
+    const modalDetailBackdrop = document.getElementById("modalDetailBackdrop");
+    // 🟢 NUEVA REFERENCIA: Modal Admin
+    const modalAdminBackdrop = document.getElementById("modalAdminBackdrop"); 
+
+    // Objeto para métodos de interfaz de usuario
+    window.__ui = {
+      // Paneles
+      showMainPanel(email) {
+        loginPanel.style.display = "none";
+        mainPanel.style.display = "block";
+        if (sidebar) sidebar.style.display = "flex";
+        document.getElementById("adminEmail").innerText = email;
+      },
+      hideMainPanel() {
+        loginPanel.style.display = "block";
+        mainPanel.style.display = "none";
+        if (sidebar) sidebar.style.display = "none";
+      },
+      
+      // Modal Nuevo Producto
+      openNewModal() {
+        modalBackdrop.style.display = "flex";
+        document.getElementById("nombre").focus();
+      },
+      closeNewModal() {
+        modalBackdrop.style.display = "none";
+      },
+
+      // Modal Editar Producto
+      openEditModal(data) {
+        modalEditBackdrop.style.display = "flex";
+        document.getElementById("editId").value = data.id;
+        document.getElementById("editNombre").value = data.nombre || "";
+        document.getElementById("editPrecio").value = data.precio ?? "";
+        document.getElementById("editMaterial").value = data.material || "";
+        document.getElementById("editTipo").value = data.tipo || "";
+        document.getElementById("editStock").value = data.stock ?? "";
+        document.getElementById("editImageUrl").value = data.imageUrl || "";
+        document.getElementById("editDescripcion").value = data.descripcion || "";
+      },
+      closeEditModal() {
+        modalEditBackdrop.style.display = "none";
+      },
+
+      // Modal Detalle Orden
+      openDetailModal() {
+        modalDetailBackdrop.style.display = "flex";
+      },
+      closeDetailModal() {
+        modalDetailBackdrop.style.display = "none";
+      },
+      
+      // 🟢 Modal Administrador (NUEVOS MÉTODOS)
+      openAdminModal() {
+        if (modalAdminBackdrop) modalAdminBackdrop.style.display = "flex";
+        const adminNombreInput = document.getElementById("adminNombre");
+        if (adminNombreInput) adminNombreInput.focus();
+      },
+      closeAdminModal() {
+        if (modalAdminBackdrop) modalAdminBackdrop.style.display = "none";
+      }
+    };
+
+    // ===================================
+    // LISTENERS DE INTERFAZ DE USUARIO
+    // ===================================
+
+    // Listeners del Modal Nuevo Producto
+    const newProdBtn = document.getElementById("newProdBtn");
+    const cancelNewBtn = document.getElementById("cancelNewBtn");
+
+    if (newProdBtn) newProdBtn.onclick = () => window.__ui.openNewModal();
+    if (cancelNewBtn) cancelNewBtn.onclick = () => window.__ui.closeNewModal();
+    if (modalBackdrop) modalBackdrop.onclick = (e) => {
+      if (e.target === modalBackdrop) window.__ui.closeNewModal();
+    };
+
+    // Listeners del Modal Editar Producto
+    const cancelEditBtn = document.getElementById("cancelEditBtn");
+    if (cancelEditBtn) cancelEditBtn.onclick = () => window.__ui.closeEditModal();
+    if (modalEditBackdrop) modalEditBackdrop.onclick = (e) => {
+      if (e.target.id === "modalEditBackdrop") window.__ui.closeEditModal();
+    };
+
+    // Listeners del Modal Detalle Orden
+    const detailCloseBtn = document.getElementById("detailCloseBtn");
+    if (detailCloseBtn) detailCloseBtn.onclick = () => window.__ui.closeDetailModal();
+    if (modalDetailBackdrop) modalDetailBackdrop.onclick = (e) => {
+      if (e.target === modalDetailBackdrop) window.__ui.closeDetailModal();
+    };
+    
+    // 🟢 LISTENERS DEL MODAL ADMINISTRADOR (CORRECCIÓN)
+    const newAdminBtn = document.getElementById("newAdminBtn");
+    const cancelAdminBtn = document.getElementById("cancelAdminBtn");
+
+    if (newAdminBtn) newAdminBtn.onclick = () => window.__ui.openAdminModal();
+    if (cancelAdminBtn) cancelAdminBtn.onclick = () => window.__ui.closeAdminModal();
+    if (modalAdminBackdrop) modalAdminBackdrop.onclick = (e) => {
+        if (e.target.id === "modalAdminBackdrop") window.__ui.closeAdminModal();
+    };
+
+    // Listener para botón de cerrar sesión superior
+    const logoutTopBtn = document.getElementById("logoutTopBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    if (logoutTopBtn && logoutBtn) logoutTopBtn.onclick = () => logoutBtn.click();
+
+  </script>
+</body>
+</html>
