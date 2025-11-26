@@ -208,7 +208,7 @@ async function loadJoyas(filter = "") {
 
             const delBtn = document.createElement("button");
             delBtn.className = "action-btn";
-            delBtn.textContent = "Ocultar";
+            delBtn.textContent = "Eliminar";
             delBtn.onclick = () => deleteProduct(d.id);
 
             actions.append(editBtn, delBtn);
